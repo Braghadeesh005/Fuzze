@@ -61,6 +61,9 @@ const schema= new Schema({
     total_amount: {
         type: Number,
         required: true
+    },
+    status:{
+        type: String,
     }
 
 

@@ -63,6 +63,9 @@ const schema = new mongoose.Schema({
         type: Number,
         required: true
       },
+      status:{
+        type: String,
+      },
       order_items :[
         {
           product_name:{
@@ -89,6 +92,7 @@ const schema = new mongoose.Schema({
   total_amount:{
     type:Number
   }
+  
   
 
 });

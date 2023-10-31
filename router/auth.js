@@ -197,16 +197,11 @@ router.delete('/cartitems/:id', authenticate, async (req, res) => {
   	});
   
 
-  	// Create a route to decrement cart quantity
+  	// Create a route to decrement cart quantity and clear cart
 	router.post('/decrementproduct', authenticate, async (req, res) => {
 	try { 
 	  // Find the user by authenticated user data
 	  const user = req.rootUser;
-	  const { total_amount, phone, address, pincode, state, country } = req.body;
-		  if ( !total_amount || !phone || !address || !pincode || !state || !country  ) {
-			console.log("please fill the field properly by decrementer");
-			return res.status(404).json({ error: "Fill the fields properly" });
-	  }
 	  // Loop through each cart item and update product quantity
 	  for (const cartItem of user.cart) {
 		const product = await productSchema.findOne({ model_id: cartItem.model_id });
@@ -220,20 +215,28 @@ router.delete('/cartitems/:id', authenticate, async (req, res) => {
 		}  
 		// Save the updated product data
 		await product.save();
+		// clear the cart
+		user.cart = [];
+		await user.save();
+		console.log("cart cleared");
 	  }
 	  console.log("product quantities decremented");
 	  res.status(200).json({ message: 'Quantities decremented successfully' });
+
+	  //changing the status to paid
+	  // .................................................................
+
 	 } catch (error) {
 	  console.error('Error decrementing quantities:', error);
 	  res.status(500).json({ error: 'Internal server error' });
 	 } 
     }); 
 
-	//checkout - shipping - clear cart	
+	//checkout - shipping
 	router.post('/checkout', authenticate, async (req, res) => {
 		try {
 		  const user = await userSchema.findOne({ _id: req.userID });
-		  const { total_amount, phone, address, pincode, state, country } = req.body;
+		  const { total_amount, phone, address, pincode, state, country , status} = req.body;
 		  if ( !total_amount || !phone || !address || !pincode || !state || !country  ) {
 			console.log("please fill the field properly");
 			return res.status(404).json({ error: "Fill the fields properly" });
@@ -261,20 +264,20 @@ router.delete('/cartitems/:id', authenticate, async (req, res) => {
 			country,
 			total_amount,
 			order_items: orderItems,
+			status: status,
 		  });
 		  await order.save();
-		  // Clear the user's cart
-		  user.cart = [];
+		  
 		  // Add the order to the user's order history
 		  user.order_history.push({
 			order_date: new Date(),
 			order_items: orderItems,
 			total_amount: total_amount,
+			status: status,
 		  });
 		  await user.save();
-		  res.status(200).json({ message: 'Order placed successfully' });
-		  console.log(`Order placed successfully by ${user.displayName}`);
-		  console.log("cart cleared");
+		  res.status(200).json({ message: 'Order request received' });
+		  console.log(`Order request received from ${user.displayName} \n Razorpay pop-up initiated`);
 		} catch (error) {
 		  console.error(error);
 		  res.status(500).json({ error: 'Internal server error' });
