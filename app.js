@@ -18,7 +18,7 @@ app.use(passport.initialize());
 // app.use(cors());
 app.use(
     cors({
-      origin: ["http://localhost:3000"],
+      origin: ["https://vivacious-sweatshirt-seal.cyclic.app"],
       methods: ["GET", "POST", "PUT", "UPDATE", "DELETE"],
       credentials: true,
       allowedHeaders: ["Content-Type", "Authorization"],
