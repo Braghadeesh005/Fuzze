@@ -1,11 +1,13 @@
 // User Schema
 const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const bcrypt = require("bcryptjs")
 
 const schema = new mongoose.Schema({
   googleId: String,
   displayName: String,
   email: String,
+  password:String,
   tokens:[
     {
         token: {
@@ -89,12 +91,21 @@ const schema = new mongoose.Schema({
     
     } 
   ],
-  total_amount:{
-    type:Number
-  }
+  total_amount:Number,
+  curr_order_id:Number
   
   
 
+});
+
+// Hashing the password
+schema.pre('save', async function (next) {
+  // Only hash the password if it's been modified and is not empty
+  if (this.isModified('password') && this.password) {
+    this.password = await bcrypt.hash(this.password, 12);
+    console.log("password hash success");
+  }
+  next();
 });
 
 //Generating Token
